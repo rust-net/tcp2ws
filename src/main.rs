@@ -12,5 +12,6 @@ async fn run() -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    env_logger::init();
     run().await
 }
