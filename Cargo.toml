@@ -1,5 +1,5 @@
 [package]
-name = "ws-socks5"
+name = "tcp2ws"
 version = "0.1.0"
 edition = "2021"
 
