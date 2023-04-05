@@ -103,7 +103,7 @@ async fn server(config: &Properties) -> Result<(), Error> {
             Ok(conn) => conn,
             Err(e) => {
                 error!("Failed to connect websocket, cause {}!", e);
-                break;
+                continue;
             }
         };
         let (mut write, mut read) = socket.split();
