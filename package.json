@@ -1,0 +1,18 @@
+{
+    "name": "app",
+    "version": "1.0.0",
+    "scripts": {
+        "setup": "rds --eject && yarn add -D @types/react @types/react-dom",
+        "start:dev": "webpack serve",
+        "build": "webpack --env production",
+        "rebuild": "webpack --env rebuild"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@types/react": "^18.0.37",
+        "@types/react-dom": "^18.0.11"
+    },
+    "dependencies": {
+        "@material-ui/core": "^4.12.4"
+    }
+}
