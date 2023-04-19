@@ -4,10 +4,19 @@ function api([uri]: TemplateStringsArray) {
     return base + uri;
 }
 
+type Config = {
+    port: number,
+    item: {
+        ws: string,
+        listen: string,
+    }[],
+}
+
 export default {
+    config(): Promise<Config> {
+        return fetch(api `api/config`).then(r => r.json())
+    },
     exit() {
-        fetch(api `exit`).then(r => r.text()).then(r => {
-            console.log(r);
-        })
+        return fetch(api `exit`).then(r => r.text())
     }
 }
