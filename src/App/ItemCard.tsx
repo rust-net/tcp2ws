@@ -50,16 +50,6 @@ export default function RecipeReviewCard(props: { item: Item, i: number, running
   const [msg, setMsg] = useState({ type: null, text: '' });
 
   useEffect(() => setExpanded(props.running), [props.running]);
-  useEffect(() => {
-    if (openMsg) {
-        console.log('设置');
-        let task = setTimeout(() => setOpenMsg(false), 2000);
-        return () => {
-            console.log('取消');
-            clearTimeout(task);
-        }
-    }
-  }, [openMsg, msg]);
 
   const handleExpandClick = async () => {
     try {
@@ -104,7 +94,7 @@ export default function RecipeReviewCard(props: { item: Item, i: number, running
         </IconButton>
       </CardActions>
 
-      <Snackbar open={openMsg}>
+      <Snackbar open={openMsg} autoHideDuration={2000} onClose={() => setOpenMsg(false)}>
         <Alert variant="filled" severity={msg.type}>{ msg.text }</Alert>
       </Snackbar>
     </Card>
