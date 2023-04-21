@@ -11,8 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import { red } from '@material-ui/core/colors';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Box from '@material-ui/core/Box';
-import CloudDoneIcon from '@material-ui/icons/CloudDone';
-import CloudOffIcon from '@material-ui/icons/CloudOff';
+import AddIcon from '@material-ui/icons/Add';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
 import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite';
 import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
 import api, { Item } from '@/api';
@@ -43,62 +43,32 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export default function RecipeReviewCard(props: { item: Item, i: number, running: boolean }) {
+export default function RecipeReviewCard(props) {
   const classes = useStyles();
-  const [expanded, setExpanded] = useState(props.running); // 是否正在运行
+  const [add, setAdd] = useState(false); // 是否正在运行
   const [openMsg, setOpenMsg] = useState(false);
   const [msg, setMsg] = useState({ type: null, text: '' });
 
-  useEffect(() => setExpanded(props.running), [props.running]);
-
-  const handleExpandClick = async () => {
-    try {
-        let ok = await (expanded ? api.stop : api.start)(props.item);
-        setMsg({ type: 'success', text: ok });
-        setOpenMsg(true);
-        setExpanded(!expanded);
-    } catch(e) {
-        setMsg({ type: 'error', text: e });
-        setOpenMsg(true);
-    }
-  };
+  const handleClick = async () => {};
 
   return (
     <Card className={classes.root}>
       <CardHeader
-        avatar={ <Avatar aria-label="recipe" className={classes.avatar}> { props.i } </Avatar> }
-        action={ <IconButton aria-label="settings"> <MoreVertIcon /> </IconButton> }
-        title={props.item.name}
-        subheader={props.item.ws}
+        action={ <IconButton disabled aria-label="settings"> <MoreVertIcon /> </IconButton> }
       />
 
       <Box padding={5} display="flex" flexDirection="row" flexWrap="wrap" alignItems="flex-start" justifyContent="center">
-        <IconButton onClick={handleExpandClick}>
-          {expanded ?  <CloudDoneIcon style={{ fontSize: 200, color: 'greenyellow' }} /> : <CloudOffIcon color='disabled' style={{ fontSize: 200 }} />}
+        <IconButton>
+          <AddIcon color='disabled' style={{ fontSize: 200 }} />
         </IconButton>
-        {props.item.listen}
+        添加配置
       </Box>
 
-      <CardContent>
-        <Typography variant="body2" color="textSecondary" component="div">
-          {props.item.desc}
-        </Typography>
-      </CardContent>
-
       <CardActions disableSpacing>
-        <IconButton
-          className={clsx(classes.expand, {
-            [classes.expandOpen]: expanded,
-          })}
-          onClick={handleExpandClick}
-        >
-            {expanded ? <PauseCircleFilledIcon /> : <PlayCircleFilledWhiteIcon />}
+        <IconButton className={classes.expand} onClick={handleClick}>
+            <AddCircleIcon />
         </IconButton>
       </CardActions>
-
-      <Snackbar open={openMsg} autoHideDuration={2000} onClose={() => setOpenMsg(false)}>
-        <Alert variant="filled" severity={msg.type}>{ msg.text }</Alert>
-      </Snackbar>
     </Card>
   );
 }

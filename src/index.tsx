@@ -3,4 +3,9 @@ import './style.global.css';
 import ReactDOM from 'react-dom';
 import App from './App';
 
-ReactDOM.render(<App />, /* container */ document.querySelector('#app'));
+export function LoadApp() {
+    ReactDOM.unmountComponentAtNode(document.querySelector('#app'));
+    ReactDOM.render(<App />, document.querySelector('#app'));
+}
+
+LoadApp();
