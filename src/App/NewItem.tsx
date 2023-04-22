@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export default function RecipeReviewCard(props) {
+export default function(props) {
   const classes = useStyles();
   const [add, setAdd] = useState(false); // 是否正在运行
   const [openMsg, setOpenMsg] = useState(false);

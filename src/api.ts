@@ -16,27 +16,28 @@ export type Config = {
     item: Item[],
 }
 
+function post(url: string, json: object) {
+    return fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(json),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(async r => r.ok ? r.text() : Promise.reject(await r.text()));
+}
+
 export default {
-    config(): Promise<Config> {
+    get_config(): Promise<Config> {
         return fetch(api `api/config`).then(r => r.json())
     },
+    set_config(config: Config) {
+        return post(api `api/config`, config);
+    },
     start(item: Item) {
-        return fetch(api `api/start`, {
-            method: 'POST',
-            body: JSON.stringify(item),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then(async r => r.ok ? r.text() : Promise.reject(await r.text()))
+        return post(api `api/start`, item);
     },
     stop(item: Item) {
-        return fetch(api `api/stop`, {
-            method: 'POST',
-            body: JSON.stringify(item),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then(async r => r.ok ? r.text() : Promise.reject(await r.text()))
+        return post(api `api/stop`, item);
     },
     list(): Promise<Item[]> {
         return fetch(api `api/list`).then(r => r.json())

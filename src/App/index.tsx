@@ -16,7 +16,7 @@ export default () => {
 
     React.useEffect(() => {
         (async () => {
-            let config = await api.config();
+            let config = await api.get_config();
             let list = await api.list();
             dispatch({ items: config.item, running: list });
         })();

@@ -18,6 +18,12 @@ import PauseCircleFilledIcon from '@material-ui/icons/PauseCircleFilled';
 import api, { Item } from '@/api';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@material-ui/core';
+import { LoadApp } from '..';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,10 +46,90 @@ const useStyles = makeStyles((theme: Theme) =>
     avatar: {
       backgroundColor: red[500],
     },
+    menu: {
+      fontSize: 22, color: 'black',
+    }
   }),
 );
 
-export default function RecipeReviewCard(props: { item: Item, i: number, running: boolean }) {
+function AlertDialog({ ok, cancel }) {
+  return (
+      < >
+          <Dialog
+              open
+              onClose={cancel}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+          >
+              <DialogTitle id="alert-dialog-title"> 警告 </DialogTitle>
+              <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    你真的要删除该配置吗？
+                  </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                  <Button onClick={ok} color="primary"> 确认 </Button>
+                  <Button onClick={cancel} color="primary" autoFocus> 取消 </Button>
+              </DialogActions>
+          </Dialog>
+      </>
+  );
+}
+
+function MoreButton(props: { item: Item, running: boolean }) {
+  const classes = useStyles();
+  const root = React.useRef();
+  const [open, setOpen] = useState(false);
+  const [delet, setDelete] = useState(false);
+  const [openMsg, setOpenMsg] = useState(false);
+  const [msg, setMsg] = useState({ type: null, text: '' });
+
+  const onEdit = React.useCallback(() => {}, []);
+  const onDelete = React.useCallback(async () => {
+    if (props.running) {
+      try {
+        let ok = await api.stop(props.item);
+        setMsg({ type: 'success', text: ok });
+        setOpenMsg(true);
+      } catch(e) {
+        setMsg({ type: 'error', text: e });
+        setOpenMsg(true);
+      }
+    }
+    let config = await api.get_config();
+    config.item = config.item.filter(it => !api.compareItems(it, props.item));
+    try {
+      await api.set_config(config);
+      setMsg({ type: 'success', text: '删除成功！' });
+      setOpenMsg(true);
+      setTimeout(LoadApp, 2000);
+      setDelete(false);
+    } catch(e) {
+      setMsg({ type: 'error', text: `删除失败：${e}` });
+      setOpenMsg(true);
+    }
+  }, [props.running]);
+
+  return (
+    <div ref={root}>
+      <IconButton onClick={() => setOpen(true)} aria-label="settings"> <MoreVertIcon /> </IconButton>
+      <Menu open={open} anchorEl={root.current} onClose={() => setOpen(false)}>
+        <MenuItem onClick={onEdit}> <EditIcon className={classes.menu} /> 修改 </MenuItem>
+        <MenuItem onClick={() => setDelete(true)}> <DeleteForeverIcon className={classes.menu} /> 删除 </MenuItem>
+      </Menu>
+      
+      { delet &&
+        <AlertDialog ok={onDelete} cancel={() => setDelete(false)}/>
+      }
+
+      <Snackbar open={openMsg} autoHideDuration={2000} onClose={() => setOpenMsg(false)}>
+        <Alert variant="filled" severity={msg.type}>{ msg.text }</Alert>
+      </Snackbar>
+    </div>
+  );
+}
+
+export default function(props: { item: Item, i: number, running: boolean }) {
   const classes = useStyles();
   const [expanded, setExpanded] = useState(props.running); // 是否正在运行
   const [openMsg, setOpenMsg] = useState(false);
@@ -67,7 +153,7 @@ export default function RecipeReviewCard(props: { item: Item, i: number, running
     <Card className={classes.root}>
       <CardHeader
         avatar={ <Avatar aria-label="recipe" className={classes.avatar}> { props.i } </Avatar> }
-        action={ <IconButton aria-label="settings"> <MoreVertIcon /> </IconButton> }
+        action={ <MoreButton {...props} running={expanded} /> }
         title={props.item.name}
         subheader={props.item.ws}
       />
