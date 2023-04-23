@@ -6,16 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "0.4.17"                             # A lightweight logging facade for Rust
-env_logger = "0.10.0"                   # A logging implementation for `log` which is configured via an environment variable.
-tokio-tungstenite = "0.18.0"         # Tokio binding for Tungstenite, the Lightweight stream-based WebSocket implementation
-tokio = { version = "1.26.0", features = ["full"] }    # An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications. 
-futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
-chrono = "0.4.23"                   # Date and time library for Rust
-
-[dependencies.tungstenite]
-version = "0.18.0"
-default-features = false
-
-[dependencies.url]
-version = "2.3.1"
+axum = { version = "0.6.12", features = ["ws", "headers"] }
+futures-util = "0.3.28"
+once_cell = "1.17.1"
+serde = { version = "1.0.159", features = ["derive"] }
+serde_json = "1.0.95"
+tokio = { version = "1.26.0", features = ["macros", "rt-multi-thread"] }
+tokio-tungstenite = "*"
+tower = "0.4.13"
+tower-http = { version = "0.4.0", features = ["fs", "cors"] }
