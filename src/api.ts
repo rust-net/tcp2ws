@@ -1,4 +1,4 @@
-const base = 'http://127.0.0.1:6601/';
+const base = './';
 
 function api([uri]: TemplateStringsArray) {
     return base + uri;

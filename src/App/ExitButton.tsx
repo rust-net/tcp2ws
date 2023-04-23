@@ -46,6 +46,7 @@ export default (({ children }) => {
         let msg = await api.exit();
         setMsg(msg);
         setExited(true);
+        setTimeout(window.close, 2000);
     }
 
     return (

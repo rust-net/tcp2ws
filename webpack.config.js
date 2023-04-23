@@ -67,10 +67,10 @@ const CONFIG = {
         },
     },
     devServer: {
-        contentBase: DIR_DIST,
+        // contentBase: DIR_DIST,
         // publicPath: DIR_DIST,
-        https: false,
-        disableHostCheck: true,
+        // https: false,
+        // disableHostCheck: true,
         // public: '0.0.0.0:0',
     },
 };
