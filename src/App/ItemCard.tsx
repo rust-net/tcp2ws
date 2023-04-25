@@ -121,7 +121,7 @@ function MoreButton(props: { item: Item, running: boolean }) {
       setMsg({ type: 'error', text: `修改失败：${e}` });
       setOpenMsg(true);
     }
-  }, []);
+  }, [props.running]);
   const onDelete = React.useCallback(async () => {
     if (props.running) {
       try {
