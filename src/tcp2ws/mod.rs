@@ -30,6 +30,15 @@ fn start() {
         FreeConsole();
         // AllocConsole();
     }
+    #[cfg(unix)]
+    unsafe {
+        libc::setsid();
+        std::process::Command::new("open")
+            .args([format!("http://127.0.0.1:{}", config.port)])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn().unwrap();
+    }
     match std::net::TcpListener::bind(format!("0.0.0.0:{}", config.port)) {
         Ok(socket) => {
             entry(socket, config);
@@ -41,20 +50,20 @@ fn start() {
 }
 
 pub fn main() {
-    #[cfg(debug_assertions)]
-    return start();
-    #[cfg(windows)]
+    #[cfg(any(windows, unix))]
     match std::env::var("detatch") {
         Ok(v) if v == "1" => {
+            start();
         }
         _ => {
             let exe = std::env::current_exe().unwrap();
             let mut process = std::process::Command::new(exe);
             process.arg("detatch");
             process.env("detatch", "1");
+            process.stdout(std::process::Stdio::null());
+            process.stderr(std::process::Stdio::null());
             process.spawn().unwrap();
             return;
         },
     }
-    start();
 }
