@@ -12,7 +12,7 @@ use tokio_tungstenite::tungstenite::Message;
 use super::*;
 use config::*;
 
-async fn on_connect(url: &str, mut stream: net::TcpStream) {
+async fn on_connect(url: String, mut stream: net::TcpStream) {
     let request = http::Request::get(url).body(()).unwrap();
     // let to = request; // WebSocket protocol error: Missing, duplicated or incorrect header sec-websocket-key!
     let to = request.uri();
@@ -25,41 +25,39 @@ async fn on_connect(url: &str, mut stream: net::TcpStream) {
     };
     let (mut write, mut read) = ws.split();
     let mut buf = Vec::with_capacity(10240);
-    spawn(async move {
-        loop {
-            buf.clear(); // reset buf length
-            select! {
-                n = stream.read_buf(&mut buf) => {
-                    match n {
-                        Ok(0) => {
-                            write.close().await.unwrap();
-                            break;
-                        },
-                        Ok(n) => {
-                            let bin = Message::binary(&buf[..n]);
-                            match write.send(bin).await {
-                                Ok(_) => (),
-                                _ => break
-                            }
-                        },
-                        _ => break
-                    }
-                },
-                msg = read.next() => {
-                    match msg {
-                        Some(msg) => {
-                            match msg {
-                                Ok(Message::Binary(ref msg)) if stream.write(msg).await.is_ok() => (),
-                                Ok(_) => continue,
-                                _ => break
-                            }
-                        },
-                        _ => break
-                    }
+    loop {
+        buf.clear(); // reset buf length
+        select! {
+            n = stream.read_buf(&mut buf) => {
+                match n {
+                    Ok(0) => {
+                        write.close().await.unwrap();
+                        break;
+                    },
+                    Ok(n) => {
+                        let bin = Message::binary(&buf[..n]);
+                        match write.send(bin).await {
+                            Ok(_) => (),
+                            _ => break
+                        }
+                    },
+                    _ => break
                 }
-            };
-        }
-    });
+            },
+            msg = read.next() => {
+                match msg {
+                    Some(msg) => {
+                        match msg {
+                            Ok(Message::Binary(ref msg)) if stream.write(msg).await.is_ok() => (),
+                            Ok(_) => continue,
+                            _ => break
+                        }
+                    },
+                    _ => break
+                }
+            }
+        };
+    }
 }
 
 static MAP: Lazy<Mutex<HashMap<Item, JoinHandle<()>>>> = Lazy::new(|| {
@@ -73,7 +71,7 @@ pub async fn start(item: Item) -> std::io::Result<()> {
             let task = spawn(async move {
                 loop {
                     let (stream, _) = sock.accept().await.unwrap();
-                    on_connect(&ws, stream).await;
+                    spawn(on_connect(ws.clone(), stream));
                 }
             });
             let mut map = MAP.lock().await;
