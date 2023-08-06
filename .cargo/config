@@ -1,7 +1,2 @@
-[profile.release]
-
-[build]
-# target = "x86_64-pc-windows-msvc"
-
-[target.x86_64-pc-windows-msvc]
-rustflags = ["-C", "target-feature=+crt-static"]
+[target.aarch64-linux-android]
+linker = "S:\\SDK\\ndk\\24.0.8215888\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android21-clang++.cmd"
