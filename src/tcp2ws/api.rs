@@ -16,7 +16,7 @@ async fn config(method: Method, config: extract::State<std::sync::Arc<Mutex<Conf
         }
         Method::POST => {
             if let Some(Json(payload)) = payload {
-                fs::write(CONFIG, serde_json::to_string_pretty(&payload).unwrap()).await.unwrap();
+                fs::write(get_config(), serde_json::to_string_pretty(&payload).unwrap()).await.unwrap();
                 let mut config = config.lock().await;
                 *config = payload;
                 Ok((StatusCode::OK, Json(serde_json::json!(*config))))

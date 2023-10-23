@@ -2,7 +2,10 @@ mod route;
 mod api;
 mod config;
 mod service;
+
 use config::Config;
+
+use crate::proc::config::get_config;
 
 // #[tokio::main(flavor = "multi_thread", worker_threads = 5)]
 #[tokio::main(flavor = "current_thread")]
@@ -22,7 +25,7 @@ extern "system" {
 }
 
 fn start() {
-    let config = std::fs::read(config::CONFIG).unwrap();
+    let config = std::fs::read(get_config()).unwrap_or(br#"{ "port": 6601, "item": [] }"#.to_vec());
     let config: Config = serde_json::from_str(&String::from_utf8_lossy(&config).to_string()).unwrap();
     #[cfg(all(windows, not(debug_assertions)))]
     unsafe {

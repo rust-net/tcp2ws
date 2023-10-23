@@ -15,7 +15,7 @@ fn route_assets() -> axum::Router {
     for (path, bin) in assets {
         #[cfg(windows)]
         let path = format!("/{}", path.replace("\\", "/"));
-        macro_log::i!("serve: {path}");
+        macro_log::d!("serve: {path}");
         let mime = match () {
             _ if path.ends_with(".html") => axum::response::TypedHeader(axum::headers::ContentType::html()),
             _ if path.ends_with(".css") => axum::response::TypedHeader(axum::headers::ContentType::from(mime::TEXT_CSS)),
