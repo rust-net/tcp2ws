@@ -114,9 +114,18 @@ async fn server(config: &Properties) -> Result<(), Error> {
     info!("Proxy to: {}", config.proxy);
 
     while let Ok((stream, peer)) = server.accept().await {
-        info!("Client connected: {}", peer);
-        let tcp = TcpStream::connect(&config.proxy).await.unwrap();
-        tokio::spawn(accept_connection(stream, tcp));
+        let dest = config.proxy.clone();
+        tokio::spawn(async move {
+            info!("Client connected: {}", peer);
+            let tcp = match TcpStream::connect(dest).await {
+                Ok(tcp) => tcp,
+                Err(e) => {
+                    error!("Client rejected: {} cause {}", peer, e);
+                    return;
+                }
+            };
+            accept_connection(stream, tcp).await;
+        });
     }
 
     Ok(())
