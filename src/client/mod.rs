@@ -1,7 +1,7 @@
 use log::*;
 use url::Url;
 use tungstenite::Message;
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, UdpSocket};
 use std::io::{Error, ErrorKind};
 use futures_util::{StreamExt, SinkExt};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -10,6 +10,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 struct Properties {
     local: String,
     ws: String,
+    udp: String,
 }
 
 fn parse_args() -> Option<Properties> {
@@ -39,6 +40,15 @@ fn parse_args() -> Option<Properties> {
                     _ => "".to_string(),
                 };
                 config.ws = ws;
+            },
+            "--udp" | "-udp" | "-u" => {
+                let udp = match args.next() {
+                    Some(udp) => {
+                        udp
+                    },
+                    _ => "".to_string(),
+                };
+                config.udp = udp;
             },
             _ => {}
         }
@@ -77,7 +87,38 @@ async fn friendly_bind(local: &str) -> Result<TcpListener, Error> {
     }
 }
 
+async fn server_udp(config: &Properties) -> Result<(), Error> {
+    let bind = {
+        let it = UdpSocket::bind(&config.local).await;
+        if matches!(it, Ok(_)) { it } else {
+            UdpSocket::bind(&format!("127.0.0.1:{}", &config.local)).await
+        }
+    };
+    match bind {
+        Ok(udp) => {
+            let u = config.udp.clone();
+            tokio::spawn(async move {
+                loop {
+                    let mut buf = vec![0u8; 1024];
+                    let (le, who) = udp.recv_from(&mut buf).await.unwrap();
+                    debug!("udp: {le}Bytes from {who:?}");
+                    let c = UdpSocket::bind("0.0.0.0:0").await.unwrap();
+                    c.connect(&u).await.unwrap();
+                    c.send(&buf[..le]).await.unwrap();
+                    let le = c.recv(&mut buf).await.unwrap();
+                    udp.send_to(&buf[..le], who).await.unwrap();
+                }
+            });
+        }
+        Err(e) => {
+            error!("{e}");
+        }
+    }
+    Ok(())
+}
+
 async fn server(config: &Properties) -> Result<(), Error> {
+    let _ = server_udp(config).await;
     let server = match friendly_bind(&config.local).await {
         Ok(it) => it,
         Err(e) if e.kind() == ErrorKind::InvalidInput => { // 如果用户只提供了端口号

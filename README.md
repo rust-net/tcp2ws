@@ -13,6 +13,7 @@ tcp2ws server -l 8080 -p 22
 client:
 ```
 tcp2ws -l 2222 -w ws://server:8080
+tcp2ws -l 2222 -w ws://server:8080 -udp server:1234  # UDP forward
 ```
 
 now, you can use `ssh root@client -p 2222` which should be the same as `ssh root@server`
