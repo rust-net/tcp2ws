@@ -10,6 +10,7 @@ pub struct Item {
     pub desc: String,
     pub ws: String,
     pub listen: String,
+    pub udp: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, Hash)]

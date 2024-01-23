@@ -4,7 +4,7 @@ use axum::*;
 use futures_util::{SinkExt, StreamExt};
 use io::{AsyncReadExt, AsyncWriteExt};
 use once_cell::sync::Lazy;
-use tokio::*;
+use tokio::{*, net::UdpSocket};
 use task::JoinHandle;
 use sync::Mutex;
 use tokio_tungstenite::tungstenite::Message;
@@ -60,11 +60,36 @@ async fn on_connect(url: String, mut stream: net::TcpStream) {
     }
 }
 
-static MAP: Lazy<Mutex<HashMap<Item, JoinHandle<()>>>> = Lazy::new(|| {
+static MAP: Lazy<Mutex<HashMap<Item, (JoinHandle<()>, JoinHandle<()>)>>> = Lazy::new(|| {
     Mutex::new(HashMap::new())
 });
 
+async fn server_udp(item: &Item) -> Result<JoinHandle<()>, Error> {
+    match UdpSocket::bind(&item.listen).await {
+        Ok(udp) => {
+            let u = item.udp.to_string();
+            let task = tokio::spawn(async move {
+                loop {
+                    let mut buf = vec![0u8; 1024];
+                    let (le, who) = udp.recv_from(&mut buf).await.unwrap();
+                    let c = UdpSocket::bind("0.0.0.0:0").await.unwrap();
+                    c.connect(&u).await.unwrap();
+                    c.send(&buf[..le]).await.unwrap();
+                    let le = c.recv(&mut buf).await.unwrap();
+                    udp.send_to(&buf[..le], who).await.unwrap();
+                }
+            });
+            return Ok(task);
+        }
+        Err(e) => {
+            macro_log::e!("{e}");
+        }
+    }
+    Ok(tokio::spawn(async {}))
+}
+
 pub async fn start(item: Item) -> std::io::Result<()> {
+    let udp_task = server_udp(&item).await.unwrap();
     match net::TcpListener::bind(&item.listen).await {
         Ok(sock) => {
             let ws = item.ws.clone();
@@ -75,7 +100,7 @@ pub async fn start(item: Item) -> std::io::Result<()> {
                 }
             });
             let mut map = MAP.lock().await;
-            map.insert(item, task);
+            map.insert(item, (task, udp_task));
             Ok(())
         },
         Err(ref e) if e.kind() == std::io::ErrorKind::AddrInUse => {
@@ -90,8 +115,9 @@ pub async fn start(item: Item) -> std::io::Result<()> {
 pub async fn stop(item: Item) -> std::io::Result<()> {
     let mut map = MAP.lock().await;
     match map.get(&item) {
-        Some(task) => {
-            task.abort();
+        Some((tcp, udp)) => {
+            tcp.abort();
+            udp.abort();
             map.remove(&item);
             Ok(())
         },
