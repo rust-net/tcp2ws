@@ -40,6 +40,9 @@ export default function({ open, title, item, ok, cancel }: Props) {
                         <TextField fullWidth variant="filled" label="Bind Address" value={it.listen} onChange={(e) => setItem({ ...it, listen: e.target.value })} />
                     </ListItem>
                     <ListItem>
+                        <TextField fullWidth variant="filled" label="UDP Forward" value={it.udp} onChange={(e) => setItem({ ...it, udp: e.target.value })} />
+                    </ListItem>
+                    <ListItem>
                         <TextField multiline fullWidth variant="outlined" label="备注" value={it.desc} onChange={(e) => setItem({ ...it, desc: e.target.value })} />
                     </ListItem>
                 </List>

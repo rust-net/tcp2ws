@@ -1,4 +1,5 @@
-const base = './';
+var base = './';
+// var base = 'http://127.0.0.1:6601/'; // 开发环境下启用
 
 function api([uri]: TemplateStringsArray) {
     return base + uri;
@@ -9,6 +10,7 @@ export type Item = {
     desc: string,
     ws: string,
     listen: string,
+    udp: string,
 }
 
 export type Config = {
@@ -50,7 +52,9 @@ export default {
             item1.name === item2.name &&
             item1.desc === item2.desc &&
             item1.ws === item2.ws &&
-            item1.listen === item2.listen
+            item1.listen === item2.listen &&
+            item1.udp === item2.udp &&
+            true
         )
     },
 }

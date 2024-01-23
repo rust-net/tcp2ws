@@ -86,7 +86,7 @@ export default function(props) {
         <ItemDialog
           open
           title="添加配置"
-          item={{ name: '实例', ws: 'ws://example.com:8080', listen: '127.0.0.1:1066', desc: '' }}
+          item={{ name: '实例', ws: 'ws://example.com:8080', listen: '127.0.0.1:1066', udp: 'example.com:1234', desc: '' }}
           ok={handleAdd}
           cancel={() => setAdd(false)}
         />
