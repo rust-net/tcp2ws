@@ -1,4 +1,4 @@
-use std::env::temp_dir;
+use std::{path::PathBuf, str::FromStr, env};
 
 use serde::{Deserialize, Serialize};
 
@@ -20,7 +20,10 @@ pub struct Config {
 }
 
 pub fn get_config() -> std::path::PathBuf {
-    let temp = temp_dir();
+    #[cfg(windows)]
+    let temp = PathBuf::from_str(&env::var("userprofile").unwrap()).unwrap();
+    #[cfg(not(windows))]
+    let temp = PathBuf::from_str(&env::var("HOME").unwrap()).unwrap();
     let config = temp.join(CONFIG);
     let Some(parent) = config.parent() else {
         return "./tcp2ws.json".into();
