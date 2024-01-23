@@ -8,4 +8,4 @@
 
 ## 安装
 
-前往 [release](https://github.com/develon2015/tcp2ws/releases) 页面, 下载 [x86_64-windows-tcp2ws-webclient.zip](https://github.com/develon2015/tcp2ws/releases/download/2.0/x86_64-windows-tcp2ws-webclient.exe) 解压即可.
+前往 [release](https://github.com/develon2015/tcp2ws/releases) 页面, 下载 [tcp2ws-webclient.exe](https://github.com/develon2015/tcp2ws/releases/download/2.0/tcp2ws-webclient.exe) 即可.
