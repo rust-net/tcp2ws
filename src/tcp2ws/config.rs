@@ -9,6 +9,7 @@ pub struct Item {
     pub name: String,
     pub desc: String,
     pub ws: String,
+    pub ip: Option<String>,
     pub listen: String,
     pub udp: String,
 }

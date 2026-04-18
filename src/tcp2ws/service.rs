@@ -12,11 +12,18 @@ use tokio_tungstenite::tungstenite::Message;
 use super::*;
 use config::*;
 
-async fn on_connect(url: String, mut stream: net::TcpStream) {
+async fn on_connect(url: String, ip: Option<String>, mut client_stream: net::TcpStream) {
     let request = http::Request::get(url).body(()).unwrap();
     // let to = request; // WebSocket protocol error: Missing, duplicated or incorrect header sec-websocket-key!
-    let to = request.uri();
-    let (ws, _response) = match tokio_tungstenite::connect_async(to).await {
+    let ws_url = request.uri();
+    let ip = match ip {
+        Some(it) if it.is_empty() => ws_url.host().unwrap().into(),
+        Some(it) => it,
+        _ => ws_url.host().unwrap().into(),
+    };
+    let server = &format!("{}:{}", ip, ws_url.port().unwrap());
+    let server_stream = net::TcpStream::connect(server).await.unwrap();
+    let (ws, _response) = match tokio_tungstenite::client_async(ws_url, server_stream).await {
         Ok(conn) => conn,
         Err(e) => {
             println!("Failed to connect websocket, cause {}!", e);
@@ -28,7 +35,7 @@ async fn on_connect(url: String, mut stream: net::TcpStream) {
     loop {
         buf.clear(); // reset buf length
         select! {
-            n = stream.read_buf(&mut buf) => {
+            n = client_stream.read_buf(&mut buf) => {
                 match n {
                     Ok(0) => {
                         write.close().await.unwrap();
@@ -48,7 +55,7 @@ async fn on_connect(url: String, mut stream: net::TcpStream) {
                 match msg {
                     Some(msg) => {
                         match msg {
-                            Ok(Message::Binary(ref msg)) if stream.write(msg).await.is_ok() => (),
+                            Ok(Message::Binary(ref msg)) if client_stream.write(msg).await.is_ok() => (),
                             Ok(_) => continue,
                             _ => break
                         }
@@ -93,10 +100,11 @@ pub async fn start(item: Item) -> std::io::Result<()> {
     match net::TcpListener::bind(&item.listen).await {
         Ok(sock) => {
             let ws = item.ws.clone();
+            let ip = item.ip.clone();
             let task = spawn(async move {
                 loop {
                     let (stream, _) = sock.accept().await.unwrap();
-                    spawn(on_connect(ws.clone(), stream));
+                    spawn(on_connect(ws.clone(), ip.clone(), stream));
                 }
             });
             let mut map = MAP.lock().await;
