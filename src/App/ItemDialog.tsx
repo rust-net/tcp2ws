@@ -37,6 +37,9 @@ export default function({ open, title, item, ok, cancel }: Props) {
                         <TextField fullWidth variant="filled" label="WebSocket API" value={it.ws} onChange={(e) => setItem({ ...it, ws: e.target.value })} />
                     </ListItem>
                     <ListItem>
+                        <TextField fullWidth variant="filled" label="Server IP (Optional)" value={it.ip} onChange={(e) => setItem({ ...it, ip: e.target.value })} />
+                    </ListItem>
+                    <ListItem>
                         <TextField fullWidth variant="filled" label="Bind Address" value={it.listen} onChange={(e) => setItem({ ...it, listen: e.target.value })} />
                     </ListItem>
                     <ListItem>

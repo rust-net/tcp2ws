@@ -9,6 +9,7 @@ export type Item = {
     name: string,
     desc: string,
     ws: string,
+    ip?: string,
     listen: string,
     udp: string,
 }
@@ -52,6 +53,7 @@ export default {
             item1.name === item2.name &&
             item1.desc === item2.desc &&
             item1.ws === item2.ws &&
+            item1.ip === item2.ip &&
             item1.listen === item2.listen &&
             item1.udp === item2.udp &&
             true
